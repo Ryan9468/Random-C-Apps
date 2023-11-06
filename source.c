@@ -1,4 +1,65 @@
 #include "main.h"
+
+void Add_Song(){
+    struct link_list *Song_1;
+    struct link_list *Song_2;
+    struct link_list *Song_3;
+    struct link_list *Song_4;
+    struct link_list *Song_5;
+    struct link_list *Song_6;
+    Song_1 = (struct link_list*) malloc(sizeof(struct link_list));
+    Song_2 = (struct link_list*) malloc(sizeof(struct link_list));
+    Song_3 = (struct link_list*) malloc(sizeof(struct link_list));
+    Song_4 = (struct link_list*) malloc(sizeof(struct link_list));
+    Song_5 = (struct link_list*) malloc(sizeof(struct link_list));
+    Song_6 = (struct link_list*) malloc(sizeof(struct link_list));
+
+    Song_1->next = Song_2;
+    Song_2->next = Song_3;
+    Song_3->next = Song_4;
+    Song_4->next = Song_5;
+    Song_5->next = Song_6;
+    Song_6->next = Song_1;
+
+    printf("Select a song to add [Name]:\n");
+    scanf(" %s", Song_1->Song_Name);
+    Song_1->Song_No = 1;
+
+    printf("Select a song to add [Name]:\n");
+    scanf(" %s", Song_2->Song_Name);
+    Song_2->Song_No = 2;
+
+    printf("Select a song to add [Name]:\n");
+    scanf(" %s", Song_3->Song_Name);
+    Song_3->Song_No = 3;
+
+    printf("Select a song to add [Name]:\n");
+    scanf(" %s", Song_4->Song_Name);
+    Song_4->Song_No = 4;
+
+    printf("Select a song to add [Name]:\n");
+    scanf(" %s", Song_5->Song_Name);
+    Song_5->Song_No = 5;
+
+    printf("Select a song to add [Name]:\n");
+    scanf(" %s", Song_6->Song_Name);
+    Song_6->Song_No = 6;
+    struct link_list *Song_Temp;
+    Song_Temp = Song_1;
+    for (int i = 1; i < 7; ++i) {
+        printf("The %d song was: %s\n", i, Song_Temp->Song_Name);
+        printf("The song No. was: %d\n", Song_Temp->Song_No);
+        Song_Temp = Song_Temp->next;
+    }
+    free(Song_1);
+    free(Song_2);
+    free(Song_3);
+    free(Song_4);
+    free(Song_5);
+    free(Song_6);
+}
+
+
 void Calculator(){
     printf("Please choose: Quotient(Q), Multiplication(M), Modulus(m), Addition(A), Subtraction(S) or (q) to quit.\n");
     char Calculator_Input;
@@ -57,16 +118,16 @@ void Calculator(){
 }
 
 
-
 int random_number(int min, int max) {
     srand(time(NULL));
     return (rand() % (max - min + 1)) + min;
 }
 
+
 void Bubble_Sort(){
-    int bubble[6];
+    int bubble[3];
     for (int i = 0; i < SIZE; ++i) {
-        printf("Please chose number %d for the array:\n", i);
+        printf("Please chose number %d for the array:\n", i+1);
         scanf("%d", &bubble[i]);
     }
     int inner, outer, temp, x;
@@ -86,36 +147,38 @@ void Bubble_Sort(){
     printf("\n");
 }
 
-void Guessing_Game(int number){
+
+void Guessing_Game(struct Player P1, struct Player P2, int number){
     int Guess_Won = 0;
     int P1_Guess;
     int P2_Guess;
-    printf("Player 1, Enter Your Guess [0-10]:\n");
+    printf("%s, Enter Your Guess [0-10]:\n", P1.name);
     scanf(" %d", &P1_Guess);
-    printf("Player 2, Enter Your Guess [0-10]:\n");
+    printf("%s, Enter Your Guess [0-10]:\n", P2.name);
     scanf(" %d", &P2_Guess);
-    printf("%d\n", number);
     bool guess_TF = 1;
     while(guess_TF) {
         if (P1_Guess == number) {
-            printf("Player one has won the game, Congrats!\n");
+            printf("%s has won the game, Congrats!\n", P1.name);
             break;
         }
         if (P2_Guess == number) {
-            printf("Player two has won the game, Congrats!\n");
+            printf("%s has won the game, Congrats!\n", P2.name);
             break;
         }
-        printf("Player 1, Enter Your Guess [0-10]:\n");
+        printf("%s, Enter Your Guess [0-10]:\n", P1.name);
         scanf(" %d", &P1_Guess);
-        printf("Player 2, Enter Your Guess [0-10]:\n");
+        printf("%s, Enter Your Guess [0-10]:\n", P2.name);
         scanf(" %d", &P2_Guess);
     }
     return;
 }
-void Password(){
+
+
+int Password(){
     char pass_guess[6];
     char password[] = "Stark";
-    printf("Please input your password to continue the program:");
+    printf("Please input the password to continue the program:");
     int Guess_Limit = 3;
     int Guess_no = 0;
     scanf("%s", pass_guess);
@@ -123,15 +186,17 @@ void Password(){
     while(truth){
         printf("Incorrect Guess, try again:\n");
         scanf("%s", pass_guess);
-        Guess_no = Guess_Limit + 1;
-        if(Guess_no == Guess_Limit){
+        if(Guess_no > Guess_Limit){
             printf("Failed to input password, exiting...\n");
-            break;
+            return 1;
         }
+        Guess_no = Guess_Limit + 1;
+
         truth = strcmp(pass_guess, password);
     }
-    return;
+    return 0;
 }
+
 
 void Say_Hi(){
     char input[10];
@@ -149,6 +214,7 @@ void Say_Hi(){
     printf("!\n");
     return;
 }
+
 
 void Game(struct Player P1, struct Player P2, int number){
     int P1_Guess;
