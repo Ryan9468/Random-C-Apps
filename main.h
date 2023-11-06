@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
-
+#include <stdbool.h>
 #define SIZE 3
 
 struct Player{
@@ -23,7 +23,7 @@ void Game(struct Player P1, struct Player P2, int number);
 void Calculator();
 int random_number(int min, int max);
 void Bubble_Sort();
-void Guessing_Game(struct Player P1, struct Player P2, int number);
+void Guessing_Game(struct Player P1, struct Player P2, int number, int lower_bound, int upper_bound);
 void Say_Hi();
 int Password();
 

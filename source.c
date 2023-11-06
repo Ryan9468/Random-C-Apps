@@ -148,13 +148,13 @@ void Bubble_Sort(){
 }
 
 
-void Guessing_Game(struct Player P1, struct Player P2, int number){
+void Guessing_Game(struct Player P1, struct Player P2, int number, int lower_bound, int upper_bound){
     int Guess_Won = 0;
     int P1_Guess;
     int P2_Guess;
-    printf("%s, Enter Your Guess [0-10]:\n", P1.name);
+    printf("%s, Enter Your Guess [%d-%d]:\n", P1.name, lower_bound, upper_bound);
     scanf(" %d", &P1_Guess);
-    printf("%s, Enter Your Guess [0-10]:\n", P2.name);
+    printf("%s, Enter Your Guess [%d-%d]:\n", P2.name, lower_bound, upper_bound);
     scanf(" %d", &P2_Guess);
     bool guess_TF = 1;
     while(guess_TF) {
@@ -166,9 +166,9 @@ void Guessing_Game(struct Player P1, struct Player P2, int number){
             printf("%s has won the game, Congrats!\n", P2.name);
             break;
         }
-        printf("%s, Enter Your Guess [0-10]:\n", P1.name);
+        printf("%s, Enter Your Guess [%d-%d]:\n", P1.name, lower_bound, upper_bound);
         scanf(" %d", &P1_Guess);
-        printf("%s, Enter Your Guess [0-10]:\n", P2.name);
+        printf("%s, Enter Your Guess [%d-%d]:\n", P2.name,lower_bound, upper_bound);
         scanf(" %d", &P2_Guess);
     }
     return;
@@ -225,17 +225,16 @@ void Game(struct Player P1, struct Player P2, int number){
     scanf(" %d", &P2_Guess);
     printf("%d\n", number);
     bool guess_TF = 1;
-    char quit;
+    char exit;
     while(guess_TF) {
         if (P1_Guess == number) {
             printf("Player one has won the game, Congrats!\n");
             P1.score = P1.score + 1;
             printf("\nPlayer one's score is now: %d\n", P1.score);
-            printf("\nPress q if you would like to quit,\nother "
-                   "wise press Enter Key:\n");
-            scanf("%c", quit);
-            quit = toupper(quit);
-            if(quit == 'Q'){
+            printf("\nPress q if you would like to quit,\nother wise press Enter Key:\n");
+            scanf("%c", &exit);
+            exit = toupper(exit);
+            if(exit == 'Q'){
                 break;
             }
         }
@@ -245,9 +244,9 @@ void Game(struct Player P1, struct Player P2, int number){
             printf("\nPlayer two's score is now: %d\n", P2.score);
             printf("\nPress q if you would like to quit,\nother "
                    "wise press Enter Key:\n");
-            scanf("%c", quit);
-            quit = toupper(quit);
-            if(quit == 'Q'){
+            scanf("%c", &exit);
+            exit = toupper(exit);
+            if(exit == 'Q'){
                 break;
             }
         }

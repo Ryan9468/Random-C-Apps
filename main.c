@@ -26,8 +26,7 @@ int main() {
     printf("What is Player two's Name?:\n");
     scanf("%s", P2.name);
     P2.score = 0;
-    Guessing_Game(P1, P2, alpha);
-    //Guessing_Game(alpha);
+    Guessing_Game(P1, P2, alpha, lower, upper);
     printf("Would you like to use the Calculator? {'Y', 'y', 'N', 'n'}:\n");
     char Calculator_Input;
     scanf(" %c", &Calculator_Input);
