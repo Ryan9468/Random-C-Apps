@@ -1,5 +1,83 @@
 #include "main.h"
 
+void print_hello(GtkWidget *widget, gpointer data){
+  Play();
+}
+  GtkWidget *window;
+  GtkWidget *button;
+  GtkWidget *button_box;
+  GtkWidget *window2;
+  GtkWidget *button2;
+  GtkWidget *button_box2;
+  
+  window = gtk_application_window_new (app); 
+  gtk_window_set_title (GTK_WINDOW (window), "Window");
+  gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
+  
+  button_box = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
+  gtk_container_add (GTK_CONTAINER (window), button_box);
+
+  
+  button = gtk_button_new_with_label ("Hello World");
+  g_signal_connect (button, "clicked", G_CALLBACK (Play), NULL);
+  g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_destroy), window);
+  gtk_container_add (GTK_CONTAINER (button_box), button);
+
+  gtk_widget_show_all (window);
+}
+
+void Play(){
+    int start1 = 2048;
+    int start2 = 2048;
+    const char *mp3_file = "/home/ryan/Downloads/FNP.mp3";
+    mpg123_handle *mh;
+    mpg123_init();
+    mh = mpg123_new(NULL, NULL);
+    if (mpg123_open(mh, mp3_file) != MPG123_OK) {
+        printf("Could not open MP3 file: %s\n", mp3_file);
+        return;
+    }
+
+    mpg123_format(mh, 88200, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+
+    snd_pcm_t *handle;
+    int err;
+    if ((err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+        fprintf(stderr, "Cannot open audio device: %s\n", snd_strerror(err));
+        return;
+    }
+
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 88200, 1, 500000)) < 0) {
+        fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
+        snd_pcm_close(handle);
+        return;
+    }
+
+    int channels, encoding;
+    long rate;
+    mpg123_getformat(mh, &rate, &channels, &encoding);
+
+    unsigned char *buffer = (unsigned char *)malloc(start1);
+    if (buffer == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return;
+    }
+
+    size_t done;
+    while (mpg123_read(mh, buffer, 4, &done) == MPG123_OK) {
+        int write_result = snd_pcm_writei(handle, buffer, done / mpg123_encsize(encoding));
+        if (write_result < 0) {
+            fprintf(stderr, "Error writing audio data: %s\n", snd_strerror(write_result));
+            break;
+        }
+    }
+
+    free(buffer);
+    snd_pcm_close(handle);
+    mpg123_close(mh);
+    mpg123_delete(mh);
+    mpg123_exit();
+}
 void Add_Song(){
     struct link_list *Song_1;
     struct link_list *Song_2;
@@ -116,7 +194,6 @@ void Calculator(){
     }
     return;
 }
-
 
 int random_number(int min, int max) {
     srand(time(NULL));
@@ -251,7 +328,7 @@ void Game(struct Player P1, struct Player P2, int number){
             }
         }
         printf("\nPlayer 1, Enter Your Guess [0-10]:\n");
-        scanf(" %d", &P1_Guess);
+	scanf(" %d", &P1_Guess);
         printf("\nPlayer 2, Enter Your Guess [0-10]:\n");
         scanf(" %d", &P2_Guess);
     }

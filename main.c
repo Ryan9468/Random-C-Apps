@@ -1,13 +1,11 @@
 #include "main.h"
 
-int main() {
+int main(){
+    GtkApplication *app;
+    activate(app, NULL);
+    Play();
     srand(time(NULL));
-    FILE *fh;
-    fh = fopen("hi.txt", "w");
-
-    fprintf(fh, "hi");
     Add_Song();
-    fclose(fh);
     Password();
     Say_Hi();
     Bubble_Sort();

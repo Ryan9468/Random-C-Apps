@@ -7,6 +7,11 @@
 #include <time.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <alsa/asoundlib.h>
+#include <mpg123.h>
+#include <gtk/gtk.h>
+#include <unistd.h>
+#include <pthread.h> 
 #define SIZE 3
 
 struct Player{
@@ -18,6 +23,10 @@ struct link_list{
     int Song_No;
     struct link_list* next;
 };
+void *myThreadFun(void *vargp);
+static void print_hello (GtkWidget *widget, gpointer data);
+void activate(GtkApplication *app, gpointer user_data);
+void Play();
 void Add_Song();
 void Game(struct Player P1, struct Player P2, int number);
 void Calculator();
