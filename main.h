@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <pthread.h> 
 #define SIZE 3
+#define EXAMPLE_APP_TYPE (example_app_get_type ()
 
 struct Player{
     char name[15];
@@ -23,9 +24,15 @@ struct link_list{
     int Song_No;
     struct link_list* next;
 };
-void *myThreadFun(void *vargp);
-static void print_hello (GtkWidget *widget, gpointer data);
+
+
+G_DECLARE_FINAL_TYPE (ExampleApp, example_app, EXAMPLE, APP, GtkApplication)
+
+ExampleApp *example_app_new (void);
+void print_hello(GtkWidget *widget, gpointer data);
 void activate(GtkApplication *app, gpointer user_data);
+
+void Play_Song_2();
 void Play();
 void Add_Song();
 void Game(struct Player P1, struct Player P2, int number);

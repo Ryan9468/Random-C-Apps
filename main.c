@@ -2,8 +2,12 @@
 
 int main(){
     GtkApplication *app;
+    int status; 
+    app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+    status = g_application_run (G_APPLICATION (app), 0, NULL);
+    g_object_unref (app);
     activate(app, NULL);
-    Play();
     srand(time(NULL));
     Add_Song();
     Password();
