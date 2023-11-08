@@ -32,6 +32,8 @@ ExampleApp *example_app_new (void);
 void print_hello(GtkWidget *widget, gpointer data);
 void activate(GtkApplication *app, gpointer user_data);
 
+void draw_background(GtkWidget *widget, cairo_t *cr);
+void Play2();
 void Play_Song_3();
 void Play_Song_2();
 void Play();

@@ -1,29 +1,73 @@
 #include "main.h"
+
+void draw_background(GtkWidget *widget, cairo_t *cr) {
+    GdkRGBA color;
+    gdk_rgba_parse(&color, "rgba(0.0, 0.0, 1.0, 0.5)");  // Set your desired color here
+    gdk_cairo_set_source_rgba(cr, &color);
+    cairo_paint(cr);
+}
+
 void activate(GtkApplication *app, gpointer user_data){
     GtkWidget *window;
     GtkWidget *grid;
     GtkWidget *button;
-
+    
     window = gtk_application_window_new (app);
-    gtk_window_set_title (GTK_WINDOW (window), "Window");
-    gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+
+    gtk_window_set_title (GTK_WINDOW (window), "Ensambattle");
+    gtk_container_set_border_width (GTK_CONTAINER (window), 350);
     grid = gtk_grid_new ();
     gtk_container_add (GTK_CONTAINER (window), grid);
+
+    GtkWidget *drawing_area = gtk_drawing_area_new();
+    g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(draw_background), NULL);
     
-    button = gtk_button_new_with_label ("Playback 1");
+    GdkRGBA color;
+    gdk_rgba_parse(&color, "rgba(0.0, 0.0, 1.0, 0.5)");  // Set your desired window color
+    gtk_widget_override_background_color(window, GTK_STATE_FLAG_NORMAL, &color);
+ 
+
+    GtkCssProvider *cssProvider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(cssProvider,
+        "label.custom-text-size { font-size: 500000px; }", -1, NULL);
+
+    GtkStyleContext *context = gtk_widget_get_style_context(window);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    button = gtk_button_new();
+    GtkWidget *label = gtk_label_new("Iron Man");
+    gtk_widget_set_name(label, "custom-text-size");
+    gtk_container_add(GTK_CONTAINER(button), label);
+
+    gtk_widget_set_size_request(button, 400, 200);
+    g_signal_connect(button, "clicked", G_CALLBACK(Play), NULL);
+    gtk_grid_attach(GTK_GRID(grid), button, 0, 0, 1, 1);
+    gtk_widget_show_all(window);
+/*
+    button = gtk_button_new_with_label ("Iron Man");
+    gtk_widget_set_name(button, "custom-text-size");
+    gtk_widget_set_size_request(button, 400, 200);
     g_signal_connect (button, "clicked", G_CALLBACK (Play), NULL);
     gtk_grid_attach (GTK_GRID (grid), button, 0, 0, 1, 1);
-    
-    button = gtk_button_new_with_label ("Playback 2");
+*/
+    button = gtk_button_new_with_label ("Forge Our Party");
+    gtk_widget_set_size_request(button, 400, 200);    
     g_signal_connect (button, "clicked", G_CALLBACK (Play_Song_2), NULL);
     gtk_grid_attach (GTK_GRID (grid), button, 1, 0, 1, 1);
     
 
-    button = gtk_button_new_with_label ("Playback 3");
+    button = gtk_button_new_with_label ("Murder Drones");
+    gtk_widget_set_size_request(button, 400, 200);
     g_signal_connect (button, "clicked", G_CALLBACK (Play_Song_3), NULL);
     gtk_grid_attach (GTK_GRID (grid), button, 2, 0, 1, 1);
 
+    button = gtk_button_new_with_label ("RWBY");
+    gtk_widget_set_size_request(button, 400, 200);
+    g_signal_connect (button, "clicked", G_CALLBACK (Play2), NULL);
+    gtk_grid_attach (GTK_GRID (grid), button, 3, 0, 1, 1);
+
     button = gtk_button_new_with_label ("Quit");
+    gtk_widget_set_size_request(button, 400, 200);
     g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_destroy), window);
     gtk_grid_attach (GTK_GRID (grid), button, 0, 1, 2, 1);
     gtk_widget_show_all (window);
@@ -32,10 +76,10 @@ void print_hello(GtkWidget *widget, gpointer data){
     Play();
 }
 
-void Play(){
+void Play2(){
     int start1 = 2048;
     int start2 = 2048;
-    const char *mp3_file = "/home/rhea/Downloads/MD.mp3";
+    const char *mp3_file = "/home/rhea/Downloads/RWBY.mp3";
     mpg123_handle *mh;
     mpg123_init();
     mh = mpg123_new(NULL, NULL);
@@ -44,7 +88,7 @@ void Play(){
         return;
     }
 
-    mpg123_format(mh, 88200, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+    mpg123_format(mh, 96000, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 
     snd_pcm_t *handle;
     int err;
@@ -53,7 +97,60 @@ void Play(){
         return;
     }
 
-    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 88200, 1, 500000)) < 0) {
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 96000, 1, 500000)) < 0) {
+        fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
+        snd_pcm_close(handle);
+        return;
+    }
+
+    int channels, encoding;
+    long rate;
+    mpg123_getformat(mh, &rate, &channels, &encoding);
+
+    unsigned char *buffer = (unsigned char *)malloc(start1);
+    if (buffer == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return;
+    }
+
+    size_t done;
+    while (mpg123_read(mh, buffer, 4, &done) == MPG123_OK) {
+        int write_result = snd_pcm_writei(handle, buffer, done / mpg123_encsize(encoding));
+        if (write_result < 0) {
+            fprintf(stderr, "Error writing audio data: %s\n", snd_strerror(write_result));
+            break;
+        }
+    }
+
+    free(buffer);
+    snd_pcm_close(handle);
+    mpg123_close(mh);
+    mpg123_delete(mh);
+    mpg123_exit();
+}
+
+void Play(){
+    int start1 = 2048;
+    int start2 = 2048;
+    const char *mp3_file = "/home/rhea/Downloads/IM.mp3";
+    mpg123_handle *mh;
+    mpg123_init();
+    mh = mpg123_new(NULL, NULL);
+    if (mpg123_open(mh, mp3_file) != MPG123_OK) {
+        printf("Could not open MP3 file: %s\n", mp3_file);
+        return;
+    }
+
+    mpg123_format(mh, 96000, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+
+    snd_pcm_t *handle;
+    int err;
+    if ((err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+        fprintf(stderr, "Cannot open audio device: %s\n", snd_strerror(err));
+        return;
+    }
+
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 96000, 1, 500000)) < 0) {
         fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
         snd_pcm_close(handle);
         return;
@@ -98,7 +195,7 @@ void Play_Song_3(){
         return;
     }
 
-    mpg123_format(mh, 18100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+    mpg123_format(mh, 96000, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 
     snd_pcm_t *handle;
     int err;
@@ -107,7 +204,7 @@ void Play_Song_3(){
         return;
     }
 
-    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 181000, 1, 500000)) < 0) {
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 96000, 1, 500000)) < 0) {
         fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
         snd_pcm_close(handle);
         return;
@@ -143,7 +240,7 @@ void Play_Song_3(){
 void Play_Song_2(){
     int start1 = 2048;
     int start2 = 2048;
-    const char *mp3_file = "/home/rhea/Downloads/MD.mp3";
+    const char *mp3_file = "/home/rhea/Downloads/FNP.mp3";
     mpg123_handle *mh;
     mpg123_init();
     mh = mpg123_new(NULL, NULL);
@@ -152,7 +249,7 @@ void Play_Song_2(){
         return;
     }
 
-    mpg123_format(mh, 96000, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+    mpg123_format(mh, 88200, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 
     snd_pcm_t *handle;
     int err;
@@ -161,7 +258,7 @@ void Play_Song_2(){
         return;
     }
 
-    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 96000, 1, 500000)) < 0) {
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 88200, 1, 500000)) < 0) {
         fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
         snd_pcm_close(handle);
         return;
