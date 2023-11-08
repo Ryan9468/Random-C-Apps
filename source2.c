@@ -9,12 +9,20 @@ void activate(GtkApplication *app, gpointer user_data){
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
     grid = gtk_grid_new ();
     gtk_container_add (GTK_CONTAINER (window), grid);
-    button = gtk_button_new_with_label ("Button 1");
+    
+    button = gtk_button_new_with_label ("Playback 1");
     g_signal_connect (button, "clicked", G_CALLBACK (Play), NULL);
     gtk_grid_attach (GTK_GRID (grid), button, 0, 0, 1, 1);
-    button = gtk_button_new_with_label ("Button 2");
+    
+    button = gtk_button_new_with_label ("Playback 2");
     g_signal_connect (button, "clicked", G_CALLBACK (Play_Song_2), NULL);
     gtk_grid_attach (GTK_GRID (grid), button, 1, 0, 1, 1);
+    
+
+    button = gtk_button_new_with_label ("Playback 3");
+    g_signal_connect (button, "clicked", G_CALLBACK (Play_Song_3), NULL);
+    gtk_grid_attach (GTK_GRID (grid), button, 2, 0, 1, 1);
+
     button = gtk_button_new_with_label ("Quit");
     g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_destroy), window);
     gtk_grid_attach (GTK_GRID (grid), button, 0, 1, 2, 1);
@@ -27,7 +35,7 @@ void print_hello(GtkWidget *widget, gpointer data){
 void Play(){
     int start1 = 2048;
     int start2 = 2048;
-    const char *mp3_file = "/home/ryan/Downloads/FNP.mp3";
+    const char *mp3_file = "/home/rhea/Downloads/MD.mp3";
     mpg123_handle *mh;
     mpg123_init();
     mh = mpg123_new(NULL, NULL);
@@ -77,10 +85,11 @@ void Play(){
     mpg123_exit();
 }
 
-void Play_Song_2(){
+
+void Play_Song_3(){
     int start1 = 2048;
     int start2 = 2048;
-    const char *mp3_file = "/home/ryan/Downloads/MD.mp3";
+    const char *mp3_file = "/home/rhea/Downloads/MD.mp3";
     mpg123_handle *mh;
     mpg123_init();
     mh = mpg123_new(NULL, NULL);
@@ -89,7 +98,7 @@ void Play_Song_2(){
         return;
     }
 
-    mpg123_format(mh, 88200, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+    mpg123_format(mh, 18100, MPG123_STEREO, MPG123_ENC_SIGNED_16);
 
     snd_pcm_t *handle;
     int err;
@@ -98,7 +107,61 @@ void Play_Song_2(){
         return;
     }
 
-    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 88200, 1, 500000)) < 0) {
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 181000, 1, 500000)) < 0) {
+        fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
+        snd_pcm_close(handle);
+        return;
+    }
+
+    int channels, encoding;
+    long rate;
+    mpg123_getformat(mh, &rate, &channels, &encoding);
+
+    unsigned char *buffer = (unsigned char *)malloc(start1);
+    if (buffer == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return;
+    }
+
+    size_t done;
+    while (mpg123_read(mh, buffer, 4, &done) == MPG123_OK) {
+        int write_result = snd_pcm_writei(handle, buffer, done / mpg123_encsize(encoding));
+        if (write_result < 0) {
+            fprintf(stderr, "Error writing audio data: %s\n", snd_strerror(write_result));
+            break;
+        }
+    }
+
+    free(buffer);
+    snd_pcm_close(handle);
+    mpg123_close(mh);
+    mpg123_delete(mh);
+    mpg123_exit();
+}
+
+
+void Play_Song_2(){
+    int start1 = 2048;
+    int start2 = 2048;
+    const char *mp3_file = "/home/rhea/Downloads/MD.mp3";
+    mpg123_handle *mh;
+    mpg123_init();
+    mh = mpg123_new(NULL, NULL);
+    if (mpg123_open(mh, mp3_file) != MPG123_OK) {
+        printf("Could not open MP3 file: %s\n", mp3_file);
+        return;
+    }
+
+    mpg123_format(mh, 96000, MPG123_STEREO, MPG123_ENC_SIGNED_16);
+
+    snd_pcm_t *handle;
+    int err;
+    if ((err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+        fprintf(stderr, "Cannot open audio device: %s\n", snd_strerror(err));
+        return;
+    }
+
+    if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 96000, 1, 500000)) < 0) {
         fprintf(stderr, "Cannot set audio parameters: %s\n", snd_strerror(err));
         snd_pcm_close(handle);
         return;
